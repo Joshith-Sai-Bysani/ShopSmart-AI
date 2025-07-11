@@ -1,4 +1,50 @@
 import type { Product } from "./types";
+import fs from 'fs';
+import path from 'path';
+
+export interface Review {
+  name: string;
+  location: string;
+  date: string;
+  rating: number;
+  review: string;
+  imageLinks: string[];
+  productName?: string; // Optionally, if you want to link reviews to products
+}
+
+function parseCSV(csv: string): Review[] {
+  const lines = csv.split('\n');
+  const header = lines[0].split(',');
+  const reviews: Review[] = [];
+  for (let i = 1; i < lines.length; i++) {
+    const row = lines[i].split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/); // Handles commas in quotes
+    if (row.length < 5) continue;
+    reviews.push({
+      name: row[0].replace(/"/g, '').trim(),
+      location: row[1].replace(/"/g, '').trim(),
+      date: row[2].replace(/"/g, '').trim(),
+      rating: parseInt(row[3]),
+      review: row[4].replace(/"/g, '').trim(),
+      imageLinks: row[5] ? JSON.parse(row[5].replace(/'/g, '"')) : [],
+    });
+  }
+  return reviews;
+}
+
+// Load reviews CSV at startup
+const reviewsCSVPath = path.resolve(process.cwd(), 'src/datasets/Walmart_reviews_data.csv');
+let allReviews: Review[] = [];
+try {
+  const csv = fs.readFileSync(reviewsCSVPath, 'utf-8');
+  allReviews = parseCSV(csv);
+} catch (e) {
+  console.error('Failed to load reviews:', e);
+}
+
+export function getReviewsForProduct(productName: string): Review[] {
+  // Simple match: look for product name in review text (case-insensitive)
+  return allReviews.filter(r => r.review.toLowerCase().includes(productName.toLowerCase()));
+}
 
 export const products: Product[] = [
   {
@@ -660,7 +706,6 @@ export const products: Product[] = [
       positive: 96,
       negative: 4,
       aspects: {
-        aroma: 98,
         texture: 97,
         quality: 95,
       },

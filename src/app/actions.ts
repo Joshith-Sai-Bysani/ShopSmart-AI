@@ -6,6 +6,7 @@ import { getSmartRecommendations } from "@/ai/flows/smart-recommendations";
 import type { Product } from "@/lib/types";
 import { geminiPoweredSearch } from "@/ai/flows/gemini-powered-search";
 import { products } from "@/lib/data";
+import { getReviewsForProduct } from "@/lib/data";
 
 export async function askProductQuestion(product: Product, question: string) {
   try {
@@ -59,12 +60,40 @@ export async function aiProductSearch(query: string) {
 export async function aiProductQA(productId: string, userQuestion: string) {
   const product = products.find((p) => p.id === productId);
   if (!product) throw new Error("Product not found");
-  
+
   // Debug logging to ensure correct product context
   console.log('AI Product QA - Product ID:', productId);
   console.log('AI Product QA - Product Name:', product.name);
   console.log('AI Product QA - User Question:', userQuestion);
-  
+
+  // If the user is asking about reviews, show actual reviews
+  if (/review|customer|feedback|what do other|opinion|say about/i.test(userQuestion)) {
+    const reviews = getReviewsForProduct(product.name);
+    if (reviews.length > 0) {
+      const topReviews = reviews.slice(0, 3).map(r => `"${r.review}" — ${r.name}, ${r.location} (${r.date})`).join("\n\n");
+      return {
+        answer: `Here are some customer reviews for ${product.name}:\n\n${topReviews}`,
+        confidence: 0.95,
+        followUpQuestions: [
+          "What are the most common complaints?",
+          "How does this product compare to others?",
+          "Are there any tips for using this product?"
+        ],
+        alternatives: []
+      };
+    } else {
+      return {
+        answer: `Sorry, there are no customer reviews available for ${product.name} yet.`,
+        confidence: 0.95,
+        followUpQuestions: [
+          "What are the main features?",
+          "Is this product popular?",
+          "How does it compare to similar products?"
+        ],
+        alternatives: []
+      };
+    }
+  }
   // Temporary fallback for rice products to prevent AI confusion
   let answer;
   if (product.category === 'Pantry' && product.name.toLowerCase().includes('rice')) {
