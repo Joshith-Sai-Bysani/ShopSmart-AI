@@ -171,7 +171,9 @@ export class GeminiService {
       lowerQuery.includes("shirt") ||
       lowerQuery.includes("wear") ||
       lowerQuery.includes("clothing") ||
-      (lowerQuery.includes("under") && lowerQuery.includes("₹"))
+      (lowerQuery.includes("under") && (lowerQuery.includes("₹") || lowerQuery.includes("$"))) ||
+      (lowerQuery.includes("below") && (lowerQuery.includes("₹") || lowerQuery.includes("$"))) ||
+      (lowerQuery.includes("less than") && (lowerQuery.includes("₹") || lowerQuery.includes("$")))
     ) {
       return {
         type: "clothing" as const,
@@ -246,10 +248,24 @@ export class GeminiService {
   }
 
   private extractBudget(query: string): number | undefined {
-    const budgetMatch = query.match(/₹(\d+)/);
-    if (budgetMatch) {
-      return parseInt(budgetMatch[1]);
+    // Handle both ₹ (INR) and $ (USD) symbols
+    const inrMatch = query.match(/₹(\d+)/);
+    if (inrMatch) {
+      // Convert INR to USD (approximate rate: 1 USD = 83 INR)
+      return Math.round(parseInt(inrMatch[1]) / 83);
     }
+    
+    const usdMatch = query.match(/\$(\d+)/);
+    if (usdMatch) {
+      return parseInt(usdMatch[1]);
+    }
+    
+    // Also handle "under X" or "below X" without currency symbol
+    const underMatch = query.match(/(?:under|below|less than)\s*(\d+)/i);
+    if (underMatch) {
+      return parseInt(underMatch[1]);
+    }
+    
     return undefined;
   }
 }

@@ -19,7 +19,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch, isLoading = false }) =>
 
   const quickSearches = [
     "I want to cook fried rice",
-    "Show me jackets under ₹3000",
+    "Show me jackets under $100",
     "Sunscreen for oily skin",
     "Wireless headphones"
   ];
@@ -33,7 +33,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch, isLoading = false }) =>
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Ask me anything... 'I want to cook fried rice' or 'Show me jackets under ₹3000'"
+            placeholder="Ask me anything... 'I want to cook fried rice' or 'Show me jackets under $100'"
             className="w-full pl-12 pr-16 py-4 text-lg border-2 border-gray-200 rounded-2xl focus:border-blue-500 focus:outline-none bg-white shadow-lg transition-all duration-300"
           />
           <motion.button

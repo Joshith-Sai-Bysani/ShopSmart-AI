@@ -35,7 +35,7 @@ To develop an AI-powered shopping assistant that enhances user interaction with 
 
 ### 1. AI Search Engine:
 
-- Accepts natural queries (e.g., "Show me water-resistant jackets under ₹3000")
+- Accepts natural queries (e.g., "Show me water-resistant jackets under $100")
 - Uses Gemini API to extract intent and map it to product data in `data.ts`
 - Returns filtered products with ranked relevancy
 
